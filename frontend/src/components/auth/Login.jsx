@@ -44,7 +44,7 @@ const Login = () => {
             const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
                 headers: { "Content-Type": "application/json" },
                 withCredentials: true,
-                timeout: 1000, // ✅ Timeout after 5 seconds
+                timeout: 5000, // ✅ Timeout after 5 seconds
             });
 
             const requestTime = Date.now() - startTime;
