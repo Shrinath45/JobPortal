@@ -25,9 +25,8 @@ app.use(cookieParser());
 app.use(cors({
   origin: ['https://jobportal-frontend-3uyu.onrender.com'],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 
 // Routes
 app.get("/", (req, res) => {
