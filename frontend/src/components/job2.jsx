@@ -18,7 +18,7 @@ const Job2 = ({job}) => {
     const handleSaveJob = async () => {
         try {
             const userId = localStorage.getItem("userId"); // or from redux
-            const res = await fetch("http://localhost:5000/api/saved-jobs/save", {
+            const res = await fetch("https://jobportal-backend-5rv2.onrender.com/api/saved-jobs/save", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId, jobId: job._id }),

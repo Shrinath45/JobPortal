@@ -12,7 +12,7 @@ const Saved = () => {
 
   const fetchSavedJobs = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/saved-jobs/${userId}`, {
+      const res = await fetch(`https://jobportal-backend-5rv2.onrender.com/api/saved-jobs/${userId}`, {
         credentials: 'include',
       });
       const data = await res.json();
@@ -25,7 +25,7 @@ const Saved = () => {
 
   const handleApply = async (jobId) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/application`, {
+      const res = await fetch(`https://jobportal-backend-5rv2.onrender.com/api/v1/application`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ const Saved = () => {
 
   const handleRemove = async (savedJobId) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/saved-jobs/${savedJobId}`, {
+      const res = await fetch(`https://jobportal-backend-5rv2.onrender.com/api/saved-jobs/${savedJobId}`, {
         method: 'DELETE',
         credentials: 'include',
       });

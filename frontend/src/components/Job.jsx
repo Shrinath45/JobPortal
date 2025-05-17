@@ -29,7 +29,7 @@ const Job = ({job}) => {
             return;
         }
 
-        const res = await fetch("http://localhost:3000/api/saved-jobs", {
+        const res = await fetch("https://jobportal-backend-5rv2.onrender.com/api/saved-jobs", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId, jobId: job._id }),  // Ensure both userId and jobId are included
