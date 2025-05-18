@@ -10,18 +10,40 @@ const Saved = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
 
+  // const fetchSavedJobs = async () => {
+  //   try {
+  //     const res = await fetch(`https://jobportal-backend-5rv2.onrender.com/api/saved-jobs/${userId}`, {
+  //       credentials: 'include',
+  //     });
+  //     const data = await res.json();
+  //     console.log(data); // Log the response to inspect the data
+  //     setSavedJobs(data);
+  //   } catch (err) {
+  //     console.error('Failed to fetch saved jobs:', err);
+  //   }
+  // };
+
   const fetchSavedJobs = async () => {
-    try {
-      const res = await fetch(`https://jobportal-backend-5rv2.onrender.com/api/saved-jobs/${userId}`, {
-        credentials: 'include',
-      });
-      const data = await res.json();
-      console.log(data); // Log the response to inspect the data
+  try {
+    const res = await fetch(`https://jobportal-backend-5rv2.onrender.com/api/saved-jobs/${userId}`, {
+      credentials: 'include',
+    });
+    const data = await res.json();
+    console.log("Saved Jobs Response:", data);
+
+    // Check if the response is a valid array
+    if (Array.isArray(data)) {
       setSavedJobs(data);
-    } catch (err) {
-      console.error('Failed to fetch saved jobs:', err);
+    } else {
+      console.error('Invalid response format:', data);
+      setSavedJobs([]); // Fallback to empty array to prevent map error
     }
-  };
+  } catch (err) {
+    console.error('Failed to fetch saved jobs:', err);
+    setSavedJobs([]); // Avoid crashing the UI
+  }
+};
+
 
   const handleApply = async (jobId) => {
     try {
