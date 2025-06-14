@@ -14,13 +14,14 @@ import { Loader2 } from 'lucide-react';
 
 const Signup = () => {
     const [input, setInput] = useState({
-        fullname: "",
-        email: "",
-        phoneNumber: "",
-        password: "",
-        role: "",
-        file: ""
-    });
+    fullname: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    role: "",
+    file: null, // ✅ add this line
+});
+
 
     const { loading, user } = useSelector(store => store.auth);
     const dispatch = useDispatch();
@@ -53,7 +54,7 @@ const Signup = () => {
         formData.append("password", input.password);
         formData.append("role", input.role);
         if (input.file) {
-            formData.append("file", input.file);
+            formData.append("profilePhoto", input.file);
         }
 
         try {
@@ -169,6 +170,7 @@ const Signup = () => {
                             <Input
                                 accept="image/*"
                                 type="file"
+                                name="profilePhoto"
                                 onChange={changeFileHandler}
                                 className="cursor-pointer"
                             />

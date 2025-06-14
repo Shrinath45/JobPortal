@@ -13,8 +13,8 @@ import { setSingleCompany } from '@/redux/companySlice';
 const CompanyCreate = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [companyName, setCompanyName] = useState(""); // Fixed: Set default empty string
-    const [loading, setLoading] = useState(false); // Added: To show loading state
+    const [companyName, setCompanyName] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const registerNewCompany = async () => {
         if (!companyName.trim()) {
@@ -22,19 +22,12 @@ const CompanyCreate = () => {
             return;
         }
 
-        setLoading(true); // Show loading state
+        setLoading(true);
         try {
-            console.log("Sending request to:", `${COMPANY_API_END_POINT}/register`);
-            console.log("Data being sent:", { companyName });
-
             const res = await axios.post(`${COMPANY_API_END_POINT}/register`, { companyName }, {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 withCredentials: true
             });
-
-            console.log("Response received:", res);
 
             if (res?.data?.success) {
                 dispatch(setSingleCompany(res.data.company));
@@ -44,34 +37,46 @@ const CompanyCreate = () => {
                 toast.error("Something went wrong while creating the company.");
             }
         } catch (error) {
-            console.error("Error creating company:", error);
             toast.error(error.response?.data?.message || "Failed to create company.");
         } finally {
-            setLoading(false); // Hide loading state
+            setLoading(false);
         }
     };
 
     return (
-        <div>
+        <div className="min-h-screen">
             <Navbar />
-            <div className='max-w-4xl mx-auto'>
-                <div className='my-10'>
-                    <h1 className='font-bold text-2xl'>Your Company Name</h1>
-                    <p className='text-gray-500'>What would you like to name your company? You can change this later.</p>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold">Your Company Name</h1>
+                    <p className="text-gray-500 mt-1">
+                        What would you like to name your company? You can change this later.
+                    </p>
                 </div>
 
-                <Label>Company Name</Label>
-                <Input
-                    type="text"
-                    className="my-2"
-                    placeholder="JobHunt, Microsoft, etc."
-                    value={companyName} // Fixed: Controlled input
-                    onChange={(e) => setCompanyName(e.target.value)}
-                />
-                
-                <div className='flex items-center gap-2 my-10'>
-                    <Button variant="outline" onClick={() => navigate("/admin/companies")}>Cancel</Button>
-                    <Button onClick={registerNewCompany} disabled={loading}>
+                <div className="space-y-2">
+                    <Label>Company Name</Label>
+                    <Input
+                        type="text"
+                        placeholder="JobHunt, Microsoft, etc."
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                    />
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mt-10">
+                    <Button
+                        variant="outline"
+                        onClick={() => navigate("/admin/companies")}
+                        className="w-full sm:w-auto"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={registerNewCompany}
+                        disabled={loading}
+                        className="w-full sm:w-auto"
+                    >
                         {loading ? "Please wait..." : "Continue"}
                     </Button>
                 </div>
