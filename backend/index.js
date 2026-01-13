@@ -34,7 +34,10 @@ app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 app.use("/api/messages", messageRoutes);
-app.use("/api/saved-jobs", savedJobRoutes); // ✅ Save for later jobs route
+app.use("/api/saved-jobs", savedJobRoutes);
+app.get("/", (req, res) => {
+    res.send("🚀 Job Portal Backend is Running Successfully");
+}); // ✅ Save for later jobs route
 
 // Connect to DB and start server
 const PORT = process.env.PORT || 3000;
