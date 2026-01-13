@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: ['https://jobportal-frontend-3uyu.onrender.com'],
+  origin: ['http://localhost:5173/','https://jobportal-frontend-3uyu.onrender.com'],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
