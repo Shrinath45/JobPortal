@@ -71,7 +71,6 @@ export const register = async (req, res) => {
     });
   }
 };
-
 export const login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -83,7 +82,7 @@ export const login = async (req, res) => {
       });
     }
 
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({
         message: "Incorrect email or password.",
@@ -106,11 +105,13 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    user = {
+    const safeUser = {
       _id: user._id,
       fullname: user.fullname,
       email: user.email,
@@ -119,23 +120,16 @@ export const login = async (req, res) => {
       profile: user.profile,
     };
 
-    return res
-      .status(200)
-      .cookie("token", token, {
-        maxAge: 1 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      })
+    return res.status(200).json({
+      success: true,
+      message: `Welcome back ${safeUser.fullname}`,
+      token,          // ✅ SEND TOKEN
+      user: safeUser,
+    });
 
-      .json({
-        message: `Welcome back ${user.fullname}`,
-        user,
-        success: true,
-      });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
+    console.error("Login error:", error);
+    return res.status(500).json({
       message: "Internal server error",
       success: false,
     });
@@ -144,18 +138,19 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+    return res.status(200).json({
       message: "Logged out successfully.",
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Logout error:", error);
     res.status(500).json({
       message: "Internal server error",
       success: false,
     });
   }
 };
+
 
 export const getMyProfile = async (req, res) => {
   try {

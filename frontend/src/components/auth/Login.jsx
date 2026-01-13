@@ -29,46 +29,47 @@ const Login = () => {
     };
 
     const submitHandler = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        if (!input.email || !input.password || !input.role) {
-            toast.error("All fields are required!");
-            return;
-        }
+    if (!input.email || !input.password || !input.role) {
+        toast.error("All fields are required!");
+        return;
+    }
 
-        try {
-            dispatch(setLoading(true));
+    try {
+        dispatch(setLoading(true));
 
-            const startTime = Date.now(); // Measure request time
-
-            const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
+        const res = await axios.post(
+            `${USER_API_END_POINT}/login`,
+            input,
+            {
                 headers: { "Content-Type": "application/json" },
-                withCredentials: true,
-                timeout: 5000, // ✅ Timeout after 5 seconds
-            });
-
-            const requestTime = Date.now() - startTime;
-            console.log(`Login request took ${requestTime}ms`); // ✅ Log API response time
-
-            if (res.data.success) {
-                dispatch(setUser(res.data.user));
-                navigate("/home");
-                toast.success(res.data.message);
+                timeout: 5000
             }
-        } catch (error) {
-            console.error("Login Error:", error);
+        );
 
-            if (error.response) {
-                toast.error(error.response.data.message || "Login failed");
-            } else if (error.request) {
-                toast.error("No response from server. Check your backend.");
-            } else {
-                toast.error("Something went wrong!");
-            }
-        } finally {
-            dispatch(setLoading(false));
+        if (res.data.success) {
+            // ✅ STORE TOKEN
+            sessionStorage.setItem("token", res.data.token);
+
+            dispatch(setUser(res.data.user));
+            toast.success(res.data.message);
+            navigate("/home");
         }
-    };
+
+    } catch (error) {
+        console.error("Login Error:", error);
+
+        if (error.response) {
+            toast.error(error.response.data.message || "Login failed");
+        } else {
+            toast.error("Server not reachable");
+        }
+    } finally {
+        dispatch(setLoading(false));
+    }
+};
+
 
     useEffect(() => {
         if (user) {
