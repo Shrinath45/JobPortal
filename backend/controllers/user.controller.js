@@ -4,11 +4,11 @@ import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 
+/* ================= REGISTER ================= */
 export const register = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, password, role } = req.body;
 
-    // Check for missing fields
     if (!fullname || !email || !phoneNumber || !password || !role) {
       return res.status(400).json({
         message: "Something is missing",
@@ -16,7 +16,6 @@ export const register = async (req, res) => {
       });
     }
 
-    // ✅ Check if file is present
     if (!req.file) {
       return res.status(400).json({
         message: "Profile photo is required.",
@@ -24,18 +23,14 @@ export const register = async (req, res) => {
       });
     }
 
-    // ✅ Safely process image
     const fileUri = getDataUri(req.file);
-    if (!fileUri || !fileUri.content) {
+    if (!fileUri?.content) {
       return res.status(400).json({
         message: "Failed to process profile photo.",
         success: false,
       });
     }
 
-    const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-
-    // Check for duplicate user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -44,10 +39,9 @@ export const register = async (req, res) => {
       });
     }
 
-    // Hash password
+    const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
     await User.create({
       fullname,
       email,
@@ -64,13 +58,15 @@ export const register = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Register error:", error);
     res.status(500).json({
       message: "Internal server error",
       success: false,
     });
   }
 };
+
+/* ================= LOGIN ================= */
 export const login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -111,39 +107,21 @@ export const login = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    const safeUser = {
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      role: user.role,
-      profile: user.profile,
-    };
-
     return res.status(200).json({
       success: true,
-      message: `Welcome back ${safeUser.fullname}`,
-      token,          // ✅ SEND TOKEN
-      user: safeUser,
+      message: `Welcome back ${user.fullname}`,
+      token,
+      user: {
+        _id: user._id,
+        fullname: user.fullname,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        profile: user.profile,
+      },
     });
-
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(500).json({
-      message: "Internal server error",
-      success: false,
-    });
-  }
-};
-
-export const logout = async (req, res) => {
-  try {
-    return res.status(200).json({
-      message: "Logged out successfully.",
-      success: true,
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
     res.status(500).json({
       message: "Internal server error",
       success: false,
@@ -151,12 +129,20 @@ export const logout = async (req, res) => {
   }
 };
 
+/* ================= LOGOUT ================= */
+export const logout = async (req, res) => {
+  return res.status(200).json({
+    message: "Logged out successfully.",
+    success: true,
+  });
+};
 
+/* ================= GET MY PROFILE ================= */
 export const getMyProfile = async (req, res) => {
   try {
-    const userId = req.id;
-    const user = await User.findById(userId);
+    const userId = req.user.id; // ✅ CORRECT
 
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -169,7 +155,7 @@ export const getMyProfile = async (req, res) => {
       user,
     });
   } catch (error) {
-    console.error("Error in /me:", error.message);
+    console.error("Get profile error:", error);
     res.status(500).json({
       success: false,
       message: "Something went wrong",
@@ -177,18 +163,14 @@ export const getMyProfile = async (req, res) => {
   }
 };
 
+/* ================= UPDATE PROFILE ================= */
 export const updateProfile = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, bio, skills } = req.body;
-    const { resume, profilePhoto } = req.files || {}; // multer.fields expected
+    const { resume, profilePhoto } = req.files || {};
 
-    let skillsArray;
-    if (skills) {
-      skillsArray = skills.split(",").map((skill) => skill.trim());
-    }
-
-    const userId = req.id;
-    let user = await User.findById(userId);
+    const userId = req.user.id; // ✅ FIXED
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(400).json({
@@ -201,22 +183,21 @@ export const updateProfile = async (req, res) => {
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (bio) user.profile.bio = bio;
-    if (skillsArray) user.profile.skills = skillsArray;
+    if (skills) {
+      user.profile.skills = skills.split(",").map(s => s.trim());
+    }
 
-    // Upload resume if provided and non-empty
-    if (resume && resume.length > 0) {
+    if (resume?.length) {
       const fileUri = getDataUri(resume[0]);
       const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
         resource_type: "raw",
         folder: "resumes",
       });
-
       user.profile.resume = cloudResponse.secure_url;
       user.profile.resumeOriginalName = resume[0].originalname;
     }
 
-    // Upload profile photo if provided and non-empty
-    if (profilePhoto && profilePhoto.length > 0) {
+    if (profilePhoto?.length) {
       const fileUri = getDataUri(profilePhoto[0]);
       const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
       user.profile.profilePhoto = cloudResponse.secure_url;
@@ -224,23 +205,13 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
 
-    // Prepare user object to return (avoid sending password or other sensitive fields)
-    const returnedUser = {
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      role: user.role,
-      profile: user.profile,
-    };
-
     return res.status(200).json({
-      message: "Profile updated successfully.",
-      user: returnedUser,
       success: true,
+      message: "Profile updated successfully.",
+      user,
     });
   } catch (error) {
-    console.error("updateProfile error:", error);
+    console.error("Update profile error:", error);
     res.status(500).json({
       message: "Internal server error",
       success: false,
