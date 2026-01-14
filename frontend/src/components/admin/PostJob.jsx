@@ -46,25 +46,41 @@ const PostJob = () => {
     setInput({ ...input, companyId: selectedCompany._id });
   };
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      const res = await axios.post(`${JOB_API_END_POINT}/post`, input, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true
-      });
+const submitHandler = async (e) => {
+  e.preventDefault();
 
-      if (res.data.success) {
-        toast.success(res.data.message);
-        navigate("/admin/jobs");
+  const token = sessionStorage.getItem("token"); // ✅ get token
+
+  if (!token) {
+    toast.error("Please login again");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const res = await axios.post(
+      `${JOB_API_END_POINT}/post`,
+      input,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ THIS IS THE FIX
+        },
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong.");
-    } finally {
-      setLoading(false);
+    );
+
+    if (res.data.success) {
+      toast.success(res.data.message);
+      navigate("/admin/jobs");
     }
-  };
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Something went wrong.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen">
